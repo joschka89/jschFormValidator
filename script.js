@@ -2,71 +2,112 @@
 
  function jschInputCheck(e,id) { 
     obj=document.getElementById(id);
-    e.preventDefault();
-    
+
     var children=obj.children;
-    for (var i = 0; i < children.length; i++) {
+    const message=[''];
+    for (var i = 0; i < children.length; i++) {      
       if(children[i].control) {
         var childId = children[i].control.attributes[1].value;     
         if(children[i].control.attributes['checkrules']) {
             var childCheckRules = children[i].control.attributes['checkrules'].value;
             var childCheckRuleArr=childCheckRules.split(' ');
-            for(var childCheckRule of childCheckRuleArr) {
-              console.log(childCheckRule);
-              jschCheckRules(childCheckRule,childId);
-            }
-        }
-                      
+            var a=0;                     
+            for(var childCheckRule of childCheckRuleArr) {            
+              var uzenetek=jschCheckRules(e,childCheckRule,childId);
+              message.push(uzenetek);
+              a++;
+            }           
+        }                   
       }
-
-    }    
+    }
+    jschGetMessage(message);      
  }
 
- function jschCheckRules(rule,id) {
-    
-    
+ function jschCheckRules(e,rule,id) {
+     
     var ruleArr=rule.split('-');
     if(ruleArr[0]) {
       rule=ruleArr[0];
     }
-    console.log(rule);
+    var message='';
     switch(rule) {
         default: rule='free';break;
-        case 'notempty': jschNotEmpty(id);break;
-        case 'min': jschMinRule(id,ruleArr[1]); break;
-        case 'max': jschMaxRule(id,ruleArr[1]);break;
+        case 'notempty': message=jschNotEmpty(e,id);break;
+        case 'min': message=jschMinRule(e,id,ruleArr[1]); break;
+        case 'max': message=jschMaxRule(e,id,ruleArr[1]);break;
     } 
-
-    return rule;
+    return message;
  }
 
- function jschNotEmpty(id) {
+ function jschNotEmpty(e,id) {
   if(document.getElementById(id).value.length == '') {
+    e.preventDefault();
     jschGetFocus(id);
-    jschGetMessage('Mező Kötelezően kitöltendő!');
-  }
+    return 'Mező Kötelezően kitöltendő!';
+  } else {
+    return '';
+  }   
  } 
 
- function jschMinRule(id,value) {
+ function jschMinRule(e,id,value) {
   if(document.getElementById(id).value.length < value) {
+    e.preventDefault();
     jschGetFocus(id);
-    jschGetMessage('Nem lehet kisebb mint '+value+'.');
+    return 'Mező nem lehet kisebb, mint '+value;
+  } else {
+    return '';
   }
  }
 
- function jschMaxRule(id,value) {
+ function jschMaxRule(e,id,value) {
   if(document.getElementById(id).value.length > value) {
+    e.preventDefault();
     jschGetFocus(id);
-    jschGetMessage('Nem lehet nagyobb mint '+value+'.');
+    return 'Mező nem lehet nagyobb, mint '+value;
+  } else {
+    return '';
   }
  }
 
- function jschGetFocus(id) {
+ function jschGetFocus(id) { 
     document.getElementById(id).focus();
  }
 
  function jschGetMessage(message) {
-  alert(message);
+  jschRenderModal(message);
+  console.log(message);
  }
 
+
+
+function jschRenderModal(message) {  
+    var str='';
+    console.log(message);
+    for (var mess of message) {
+      str+=mess+'<br>';
+    }
+
+    if(document.getElementById('myModal')) {
+      document.getElementById('myModal').style.display='inherit';
+      return;
+    }
+  
+    var div = document.createElement("div");
+    var createdDiv=document.body.appendChild(div);
+    createdDiv.innerHTML+=`<div id="myModal" class="modal">
+                            <div class="modal-content">
+                              <span class="close">&times;</span>
+                              <p>${str}</p>
+                            </div>
+                          </div>`; 
+
+    document.getElementById("myModal").onclick = function() {
+      jschClose();
+    }                          
+}     
+
+function jschClose() {           
+  var node=document.getElementById('myModal');
+  node.style.display ='none';  
+}   
 
